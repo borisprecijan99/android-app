@@ -4,15 +4,50 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_blue"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <ImageButton
+        android:id="@+id/speakButton"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="64dp"
+        android:background="@null"
+        android:onClick="onButtonClick"
+        android:scaleType="centerInside"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/microphone" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="368dp"
+        android:layout_height="143dp"
+        android:gravity="center"
+        android:text="Dobrodošli u aplikaciju Glasovni pomoćnik"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/speakButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.029" />
+
+    <!--<ImageButton
+        android:id="@+id/speakButtonOff"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="64dp"
+        android:background="@null"
+        android:onClick="onButtonClick"
+        android:scaleType="centerInside"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/microphone_off" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
