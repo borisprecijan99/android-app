@@ -4,7 +4,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static RetrofitClient instance = null;
+    private static RetrofitClient instance;
     private final GoogleKnowledgeGraphSearchApi googleKnowledgeGraphSearchApi;
 
     private RetrofitClient() {

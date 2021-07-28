@@ -8,6 +8,6 @@ import retrofit2.http.Query;
 public interface GoogleKnowledgeGraphSearchApi {
     String BASE_URL = "https://kgsearch.googleapis.com/";
 
-    @GET(value = "v1/entities:search?key=AIzaSyDLwwdIVAvEsfeSjHAWK-AanAsar6ZaqqQ&limit=1&indent=True&languages=sr")
+    @GET(value = "v1/entities:search?key=AIzaSyDLwwdIVAvEsfeSjHAWK-AanAsar6ZaqqQ&indent=True&languages=sr")
     Call<ResponseBody> getResult(@Query(value = "query") String query);
 }

@@ -1,14 +1,27 @@
 package pmf.rma.voiceassistant.utils;
 
-import android.app.Activity;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+
+import androidx.annotation.Nullable;
 
 import java.util.Locale;
 
-public class TextToSpeech {
+public class TextToSpeech extends Service {
     private android.speech.tts.TextToSpeech textToSpeech;
+    private Context context;
 
-    public TextToSpeech(Activity activity, String initText) {
-        this.textToSpeech = new android.speech.tts.TextToSpeech(activity.getApplicationContext(), status -> {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        context = getApplicationContext();
+    }
+
+    /*public TextToSpeech(Context context, String initText) {
+        this.textToSpeech = new android.speech.tts.TextToSpeech(context, status -> {
             if (status == android.speech.tts.TextToSpeech.SUCCESS) {
                 textToSpeech.setLanguage(Locale.getDefault());
                 if (initText != null)
@@ -19,8 +32,24 @@ public class TextToSpeech {
         });
     }
 
-    public TextToSpeech(Activity activity) {
-        this(activity, null);
+    public TextToSpeech(Context context) {
+        this(context, null);
+    }*/
+
+    public TextToSpeech() {
+
+    }
+
+    public void initialize(String initText) {
+        this.textToSpeech = new android.speech.tts.TextToSpeech(context, status -> {
+            if (status == android.speech.tts.TextToSpeech.SUCCESS) {
+                textToSpeech.setLanguage(Locale.getDefault());
+                if (initText != null)
+                    speak(initText);
+            } else {
+                throw new RuntimeException();
+            }
+        });
     }
 
     public void speak(String text) {
@@ -37,5 +66,17 @@ public class TextToSpeech {
 
     public boolean isSpeaking() {
         return textToSpeech.isSpeaking();
+    }
+
+    public class TextToSpeechBinder extends Binder {
+        public TextToSpeech getService() {
+            return TextToSpeech.this;
+        }
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return new TextToSpeechBinder();
     }
 }

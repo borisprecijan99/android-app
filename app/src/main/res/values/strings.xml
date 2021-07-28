@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Glasovni pomoćnik</string>
+    <string name="textview_text">Kliknite na dugme ispod i izgovorite Vašu komandu.</string>
+    <string name="jokeNotFound">Trenutno ne znam nijedan vic. Molim Vas, pokušajte kasnije.</string>
+    <string name="commandNotFound">Žao mi je, ali ne razumem Vašu komandu.</string>
 </resources>
