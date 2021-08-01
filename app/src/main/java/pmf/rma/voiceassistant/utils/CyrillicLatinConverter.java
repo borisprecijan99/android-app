@@ -1,4 +1,4 @@
-package pmf.rma.voiceassistant.unnamed;
+package pmf.rma.voiceassistant.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -120,5 +120,4 @@ public class CyrillicLatinConverter {
         }
         return latinBuffer.toString();
     }
-
 }

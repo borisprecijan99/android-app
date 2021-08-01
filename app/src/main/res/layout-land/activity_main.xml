@@ -9,30 +9,29 @@ tools:context=".MainActivity">
 
     <ImageButton
         android:id="@+id/speakButton"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="48dp"
         android:background="@null"
         android:onClick="onButtonClick"
         android:scaleType="centerInside"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.499"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.924"
         app:srcCompat="@drawable/microphone" />
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="768dp"
-        android:layout_height="82dp"
+        android:id="@+id/textViewSpeech"
+        android:layout_width="519dp"
+        android:layout_height="238dp"
         android:gravity="center"
-        android:text="Dobrodošli u aplikaciju Glasovni pomoćnik"
+        android:text="@string/textview_text"
         android:textSize="34sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/speakButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.029" />
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

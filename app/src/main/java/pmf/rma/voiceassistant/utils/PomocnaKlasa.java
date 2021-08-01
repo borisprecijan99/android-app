@@ -1,6 +1,6 @@
-package pmf.rma.voiceassistant.unnamed;
+package pmf.rma.voiceassistant.utils;
 
-import android.app.Activity;
+import android.app.AlarmManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -10,17 +10,26 @@ import android.hardware.camera2.CameraManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.provider.MediaStore;
-import android.service.autofill.FieldClassification;
+import android.provider.Settings;
 import android.telephony.SmsManager;
 
+import androidx.annotation.RequiresApi;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import pmf.rma.voiceassistant.database.DataGenerator;
+import pmf.rma.voiceassistant.Global;
+import pmf.rma.voiceassistant.database.entity.JokeEntity;
+import pmf.rma.voiceassistant.utils.constants.RegularExpressions;
 
 public class PomocnaKlasa {
     private final Context context;
@@ -28,20 +37,53 @@ public class PomocnaKlasa {
     private final SmsManager smsManager;
     private final WifiManager wifiManager;
     private final CameraManager cameraManager;
-    private MediaPlayer mediaPlayer;
+    private static MediaPlayer mediaPlayer;
     private final List<String> mp3Files;
     private final Random random;
     private Pattern pattern;
+    private static boolean isPaused;
+    private Global global;
+    private final List<JokeEntity> jokes;
+    private final AlarmManager alarmManager;
 
+    //smisliti naziv klase
     public PomocnaKlasa(Context context) {
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.smsManager = SmsManager.getDefault();
         this.wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         this.mp3Files = scanDeviceForMp3Files();
         this.random = new Random();
         this.pattern = null;
+        this.global = (Global) context.getApplicationContext();
+        this.jokes = global.getJokes();
+    }
+
+    public String tellAJoke() {
+        int size = jokes.size();
+        if (size == 0) {
+            return null;
+        } else {
+            int index = random.nextInt(size);
+            return jokes.get(index).getText();
+        }
+    }
+
+    public String whatIsTheDate() {
+        LocalDate today = LocalDate.now();
+        int day = today.getDayOfMonth();
+        String month = today.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
+        int year = today.getYear();
+        return "Danas je " + day + ". " + month + " " + year + ". godine.";
+    }
+
+    public String whatTimeIsIt() {
+        LocalTime now = LocalTime.now();
+        int hours = now.getHour();
+        int minutes = now.getMinute();
+        return "Trenutno je " + hours + " časova i " + minutes + " minuta.";
     }
 
     public boolean turnOnBluetooth() {
@@ -61,10 +103,11 @@ public class PomocnaKlasa {
     }
 
     public boolean turnOnFlashlight() {
-        String cameraId = null; // Usually front camera is at 0 position and back camera is 1.
+        String cameraId;
         try {
             cameraId = cameraManager.getCameraIdList()[0];
             cameraManager.setTorchMode(cameraId, true);
+            return true;
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -72,10 +115,11 @@ public class PomocnaKlasa {
     }
 
     public boolean turnOffFlashlight() {
-        String cameraId = null; // Usually front camera is at 0 position and back camera is 1.
+        String cameraId;
         try {
             cameraId = cameraManager.getCameraIdList()[0];
             cameraManager.setTorchMode(cameraId, false);
+            return true;
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -83,19 +127,31 @@ public class PomocnaKlasa {
     }
 
     public boolean turnOnWifi() {
-        wifiManager.setWifiEnabled(true);
+        if (!wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(true);
+            return true;
+        }
         return false;
     }
 
     public boolean turnOffWifi() {
-        wifiManager.setWifiEnabled(false);
+        if (wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(false);
+            return true;
+        }
         return false;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    public void wifiSettings() {
+        Intent wifiSettingsIntent = new Intent(Settings.Panel.ACTION_WIFI);
+        context.startActivity(wifiSettingsIntent);
     }
 
     public void call(/*String number*/String speech) {
         /*Pattern pattern = Pattern.compile("vre");
         Matcher matcher = pattern.matcher("");*/
-        pattern = Pattern.compile(DataGenerator.PHONE_CALL_REGEX);
+        pattern = Pattern.compile(RegularExpressions.PHONE_CALL_REGEX);
         Matcher matcher = pattern.matcher(speech);
         String number = null;
         if (matcher.find()) {
@@ -115,7 +171,7 @@ public class PomocnaKlasa {
 
     }
 
-    public void sendSms(String number, String text) {
+    public void sendMessage(String number, String text) {
         smsManager.sendTextMessage(number, null, text, null, null);
     }
 
@@ -178,8 +234,6 @@ public class PomocnaKlasa {
         return mp3Files;
     }
 
-    private boolean isPaused;
-
     public void playMusic() {
         int size = mp3Files.size();
         int index = random.nextInt(size);
@@ -194,6 +248,7 @@ public class PomocnaKlasa {
 
     public void stopMusic() {
         if (mediaPlayer != null) {
+            isPaused = false;
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
@@ -201,7 +256,7 @@ public class PomocnaKlasa {
     }
 
     public void pauseMusic() {
-        if (mediaPlayer.isPlaying()) {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             isPaused = true;
         }

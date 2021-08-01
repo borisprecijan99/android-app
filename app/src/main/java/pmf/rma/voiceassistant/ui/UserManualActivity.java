@@ -1,16 +1,14 @@
-package pmf.rma.voiceassistant.unnamed;
+package pmf.rma.voiceassistant.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-import pmf.rma.voiceassistant.utils.SpeechToText;
-
-public class StartStopActivity extends AppCompatActivity {
-    private SpeechToText speechToText;
+public class UserManualActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_user_manual);
     }
 }

@@ -1,4 +1,4 @@
-package pmf.rma.voiceassistant.utils;
+package pmf.rma.voiceassistant.services;
 
 import android.app.Service;
 import android.content.Context;
@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Locale;
 
-public class SpeechToText extends Service {
+public class SpeechToTextService extends Service {
     private SpeechRecognizer speechRecognizer;
     private Intent speechRecognizerIntent;
     private Context context;
@@ -23,26 +23,17 @@ public class SpeechToText extends Service {
         context = getApplicationContext();
     }
 
-    public SpeechToText(Context context, SpeechToTextCallback speechToTextCallback) {
+    public SpeechToTextService() {
+
+    }
+
+    public void initialize(SpeechToTextServiceCallback speechToTextServiceCallback) {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-        speechRecognizer.setRecognitionListener(new SpeechToTextListener(speechToTextCallback));
-    }
-
-    public SpeechToText() {
-
-    }
-
-    public void initialize(SpeechToTextCallback speechToTextCallback) {
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
-        speechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-        speechRecognizer.setRecognitionListener(new SpeechToTextListener(speechToTextCallback));
+        speechRecognizer.setRecognitionListener(new SpeechToTextServiceListener(speechToTextServiceCallback));
     }
 
     public void startListening() {
@@ -61,15 +52,19 @@ public class SpeechToText extends Service {
         speechRecognizer.cancel();
     }
 
-    public class SpeechToTextBinder extends Binder {
-        public SpeechToText getService() {
-            return SpeechToText.this;
+    public void setSpeechToTextCallback(SpeechToTextServiceCallback speechToTextServiceCallback) {
+        speechRecognizer.setRecognitionListener(new SpeechToTextServiceListener(speechToTextServiceCallback));
+    }
+
+    public class SpeechToTextServiceBinder extends Binder {
+        public SpeechToTextService getService() {
+            return SpeechToTextService.this;
         }
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return new SpeechToTextBinder();
+        return new SpeechToTextServiceBinder();
     }
 }

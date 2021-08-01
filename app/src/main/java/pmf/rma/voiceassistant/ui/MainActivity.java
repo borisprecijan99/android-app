@@ -1,13 +1,23 @@
 package pmf.rma.voiceassistant.ui;
 
+import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.*;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.speech.SpeechRecognizer;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -18,44 +28,36 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.TextStyle;
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
 
 import okhttp3.ResponseBody;
-import pmf.rma.voiceassistant.database.AppDatabase;
+import pmf.rma.voiceassistant.Global;
 import pmf.rma.voiceassistant.database.entity.CommandEntity;
-import pmf.rma.voiceassistant.database.entity.JokeEntity;
-import pmf.rma.voiceassistant.unnamed.CyrillicLatinConverter;
-import pmf.rma.voiceassistant.unnamed.GoogleKnowledgeGraphSearchApi;
-import pmf.rma.voiceassistant.unnamed.MyReceiver;
-import pmf.rma.voiceassistant.unnamed.PomocnaKlasa;
-import pmf.rma.voiceassistant.unnamed.RetrofitClient;
-import pmf.rma.voiceassistant.utils.SpeechToText;
-import pmf.rma.voiceassistant.utils.SpeechToTextCallback;
+import pmf.rma.voiceassistant.utils.CyrillicLatinConverter;
+import pmf.rma.voiceassistant.services.http.GoogleKnowledgeGraphSearchApi;
+import pmf.rma.voiceassistant.receivers.NotificationBroadcastReceiver;
+import pmf.rma.voiceassistant.services.http.RetrofitClient;
+import pmf.rma.voiceassistant.services.SpeechToTextService;
+import pmf.rma.voiceassistant.services.SpeechToTextServiceCallback;
+import pmf.rma.voiceassistant.utils.PomocnaKlasa;
 import pmf.rma.voiceassistant.utils.StringEditDistance;
-import pmf.rma.voiceassistant.utils.TextToSpeech;
+import pmf.rma.voiceassistant.services.TextToSpeechService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static pmf.rma.voiceassistant.database.DataGenerator.*;
-
-public class MainActivity extends AppCompatActivity implements SpeechToTextCallback {
+public class MainActivity extends AppCompatActivity implements SpeechToTextServiceCallback, ServiceConnection {
     private static final String INITIAL_TEXT = "Zdravo! Dobrodošli u aplikaciju Glasovni pomoćnik.";
 
-    private TextToSpeech textToSpeech;
-    private SpeechToText speechToText;
+    private TextToSpeechService textToSpeechService;
+    private SpeechToTextService speechToTextService;
     private ImageButton startListeningButton;
     private TextView speechTextView;
     private boolean clicked;
     private List<CommandEntity> commands;
-    private List<JokeEntity> jokes;
     private PomocnaKlasa utils;
     private GoogleKnowledgeGraphSearchApi googleKnowledgeGraphSearchApi;
+    private Global global;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +72,18 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
         startListeningButton = findViewById(R.id.speakButton);
         speechTextView = findViewById(R.id.textViewSpeech);
 
-        AppDatabase.databaseExecutor.execute(() -> {
+        /*AppDatabase.databaseExecutor.execute(() -> {
             AppDatabase db = AppDatabase.getInstance(this);
             commands = db.commandDao().getAll();
             jokes = db.jokeDao().getAll();
-        });
+        });*/
+        global = (Global) getApplicationContext();
+        commands = global.getCommands();
 
-        //textToSpeech = new TextToSpeech(this, INITIAL_TEXT);
-        speechToText = new SpeechToText(this, this);
+        Intent textToSpeechServiceIntent = new Intent(this, TextToSpeechService.class);
+        Intent speechToTextServiceIntent = new Intent(this, SpeechToTextService.class);
+        bindService(textToSpeechServiceIntent, this, BIND_AUTO_CREATE);
+        bindService(speechToTextServiceIntent, this, BIND_AUTO_CREATE);
 
         this.utils = new PomocnaKlasa(this);
 
@@ -86,16 +92,16 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
 
     public void onButtonClick(View view) {
         if (!clicked) {
-            speechToText.startListening();
+            speechToTextService.startListening();
         } else {
-            speechToText.cancel();
+            speechToTextService.cancel();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Intent intent = new Intent(this, MyReceiver.class);
+        Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
         intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_ON");
         sendBroadcast(intent);
     }
@@ -103,15 +109,20 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
     @Override
     protected void onResume() {
         super.onResume();
-        Intent intent = new Intent(this, MyReceiver.class);
-        intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_ON");
+        Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
+        intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_OFF");
         sendBroadcast(intent);
+        if (speechToTextService != null)
+            speechToTextService.setSpeechToTextCallback(this);
     }
 
     @Override
     protected void onDestroy() {
-        textToSpeech.shutdown();
-        speechToText.destroy();
+        textToSpeechService.shutdown();
+        speechToTextService.destroy();
+        Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
+        intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_OFF");
+        sendBroadcast(intent);
         super.onDestroy();
     }
 
@@ -120,7 +131,13 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
         String result = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
         speechTextView.setText(result);
         startListeningButton.setImageResource(R.drawable.microphone);
-        test(result);
+        processTheResults(result);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        speechTextView.setText(R.string.textview_text);
         clicked = false;
     }
 
@@ -142,82 +159,112 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
         clicked = false;
     }
 
-    private void test(String result) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent activityIntent = new Intent(this, UserManualActivity.class);
+        startActivity(activityIntent);
+        return true;
+    }
+
+    private void processTheResults(String result) {
         boolean commandFound = false;
         for (CommandEntity command: commands) {
             if (result.matches(command.getRegularExpression())) {
                 switch (command.getRegularExpression()) {
                     case TELL_A_JOKE_REGEX:
-                        if (jokes.size() != 0) {
-                            Random random = new Random();
-                            int size = jokes.size();
-                            int index = random.nextInt(size);
-                            textToSpeech.speak(jokes.get(index).getText());
-                        } else {
-                            textToSpeech.speak(getString(R.string.jokeNotFound));
-                        }
+                        String joke = utils.tellAJoke();
+                        if (joke == null)
+                            textToSpeechService.speak(getString(R.string.jokeNotFound));
+                        else
+                            textToSpeechService.speak(joke);
                         break;
                     case TURN_ON_BLUETOOTH_REGEX:
-                        boolean isTurnedOn = utils.turnOnBluetooth();
-                        if (isTurnedOn)
-                            textToSpeech.speak("Uključujem blutut.");
+                        boolean isBluetoothTurnedOn = utils.turnOnBluetooth();
+                        if (isBluetoothTurnedOn)
+                            textToSpeechService.speak("Uključujem blutut.");
                         else
-                            textToSpeech.speak("Blutut je već uključen.");
+                            textToSpeechService.speak("Blutut je već uključen.");
                         break;
                     case TURN_OFF_BLUETOOTH_REGEX:
-                        boolean isTurnedOff = utils.turnOffBluetooth();
-                        if (isTurnedOff)
-                            textToSpeech.speak("Isključujem blutut.");
+                        boolean isBluetoothTurnedOff = utils.turnOffBluetooth();
+                        if (isBluetoothTurnedOff)
+                            textToSpeechService.speak("Isključujem blutut.");
                         else
-                            textToSpeech.speak("Blutut je već isključen.");
+                            textToSpeechService.speak("Blutut je već isključen.");
                         break;
                     case TURN_ON_FLASHLIGHT_REGEX:
-                        utils.turnOnFlashlight();
-                        textToSpeech.speak("Uključujem lampu.");
+                        boolean isFlashlightTurnedOn = utils.turnOnFlashlight();
+                        if (isFlashlightTurnedOn)
+                            textToSpeechService.speak("Uključujem lampu.");
+                        else
+                            textToSpeechService.speak("Lampa je već uključena.");
                         break;
                     case TURN_OFF_FLASHLIGHT_REGEX:
-                        utils.turnOffFlashlight();
-                        textToSpeech.speak("Isključujem lampu.");
+                        boolean isFlashlightTurnedOff = utils.turnOffFlashlight();
+                        if (isFlashlightTurnedOff)
+                            textToSpeechService.speak("Isključujem lampu.");
+                        else
+                            textToSpeechService.speak("Lampa je već isključena.");
                         break;
                     case TURN_ON_WIFI_REGEX:
-
-                        textToSpeech.speak("Uključujem WiFi...");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            utils.wifiSettings();
+                            textToSpeechService.speak("Otvaram podešavanja za WiFi.");
+                        } else {
+                            boolean isWifiTurnedOn = utils.turnOnWifi();
+                            if (isWifiTurnedOn)
+                                textToSpeechService.speak("Uključujem WiFi.");
+                            else
+                                textToSpeechService.speak("WiFi je već uključen.");
+                        }
                         break;
                     case TURN_OFF_WIFI_REGEX:
-
-                        textToSpeech.speak("Isključujem WiFi...");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            utils.wifiSettings();
+                            textToSpeechService.speak("Otvaram podešavanja za WiFi.");
+                        } else {
+                            boolean isWifiTurnedOff = utils.turnOffWifi();
+                            if (isWifiTurnedOff)
+                                textToSpeechService.speak("Isključujem WiFi.");
+                            else
+                                textToSpeechService.speak("WiFi je već isključen.");
+                        }
                         break;
                     case TAKE_A_SCREENSHOT_REGEX:
                         utils.takeAScreenshot();
-                        textToSpeech.speak("Pravim snimak ekrana...");
+                        textToSpeechService.speak("Pravim snimak ekrana.");
                         break;
                     case WHAT_TIME_IS_IT_REGEX:
-                        LocalTime now = LocalTime.now();
-                        textToSpeech.speak("Trenutno je " + now.getHour() + " časova i " + now.getMinute() + " minuta.");
+                        String time = utils.whatTimeIsIt();
+                        textToSpeechService.speak(time);
                         break;
                     case WHAT_IS_THE_DATE_REGEX:
-                        LocalDate today = LocalDate.now();
-                        int day = today.getDayOfMonth();
-                        String month = today.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
-                        int year = today.getYear();
-                        textToSpeech.speak("Danas je " + day + ". " + month + " " + year + ". godine.");
+                        String date = utils.whatIsTheDate();
+                        textToSpeechService.speak(date);
                         break;
                     case PLAY_MUSIC_REGEX:
-                        textToSpeech.speak("Tražim neku pesmu na Vašem uređaju.");
+                        textToSpeechService.speak("Tražim neku pesmu na Vašem uređaju.");
                         utils.playMusic();
                         break;
                     case STOP_MUSIC_REGEX:
-                        textToSpeech.speak("Zaustavljam pesmu.");
+                        textToSpeechService.speak("Zaustavljam pesmu.");
                         utils.stopMusic();
                         break;
                     case PAUSE_MUSIC_REGEX:
-                        textToSpeech.speak("Pauziram pesmu.");
+                        textToSpeechService.speak("Pauziram pesmu.");
                         utils.pauseMusic();
                         break;
                     case PHONE_CALL_REGEX:
-                        String number = result.replaceAll("[a-zA-z\\s]", "");
-                        textToSpeech.speak("Pozivam broj telefona " + number + ".");
-                        utils.call(number);
+                        //String number = result.replaceAll("[a-zA-Z\\s]", "");
+                        //textToSpeechService.speak("Pozivam broj telefona " + number + ".");
+                        utils.call(result);
                         break;
                 }
                 commandFound = true;
@@ -225,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
             }
         }
         if (!commandFound) {
-            textToSpeech.speak("Ne znam da izvršim Vašu komandu, pa ću pokušati da pretražim na Google-u rezultate za " + result);
+            textToSpeechService.speak("Ne znam da izvršim Vašu komandu, pa ću pokušati da pretražim na Guglu rezultate za " + result);
             googleKnowledgeGraphSearchApi.getResult(result).enqueue(
                     new Callback<ResponseBody>() {
                         @Override
@@ -248,22 +295,40 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextCallb
                                             text = JsonPath.read(element, "$.result.detailedDescription.articleBody");
                                         }
                                     }
-                                    textToSpeech.speak(text);
+                                    textToSpeechService.speak(text);
                                 } else {
-                                    textToSpeech.speak("Nisam pronašla nijedan rezultat.");
+                                    textToSpeechService.speak("Nisam pronašla nijedan rezultat.");
                                 }
                             } catch (Exception e) {
-                                textToSpeech.speak("Nisam pronašla nijedan rezultat.");
+                                textToSpeechService.speak("Nisam pronašla nijedan rezultat.");
                                 e.printStackTrace();
                             }
                         }
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            textToSpeech.speak(getString(R.string.commandNotFound));
+                            textToSpeechService.speak(getString(R.string.commandNotFound));
                         }
                     }
             );
         }
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        if (service instanceof SpeechToTextService.SpeechToTextServiceBinder) {
+            SpeechToTextService.SpeechToTextServiceBinder speechToTextServiceBinder = (SpeechToTextService.SpeechToTextServiceBinder) service;
+            speechToTextService = speechToTextServiceBinder.getService();
+            speechToTextService.initialize(this);
+        } else if (service instanceof TextToSpeechService.TextToSpeechServiceBinder) {
+            TextToSpeechService.TextToSpeechServiceBinder textToSpeechServiceBinder = (TextToSpeechService.TextToSpeechServiceBinder) service;
+            textToSpeechService = textToSpeechServiceBinder.getService();
+            textToSpeechService.initialize(INITIAL_TEXT);
+        }
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+
     }
 }

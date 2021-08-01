@@ -1,4 +1,4 @@
-package pmf.rma.voiceassistant.unnamed;
+package pmf.rma.voiceassistant.services.http;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
