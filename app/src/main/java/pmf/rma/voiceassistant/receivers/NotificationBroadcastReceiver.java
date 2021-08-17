@@ -78,7 +78,6 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
             if (speechToTextService != null) {
                 speechToTextService.stopForeground(false);
             }
-            notificationManager.cancel(NOTIFICATION_ID);
         } else if (intent.getAction().equals("pmf.rma.voiceassistant.CLICK")) {
             if (speechToTextService == null) {
                 SpeechToTextService.SpeechToTextServiceBinder speechToTextServiceBinder = (SpeechToTextService.SpeechToTextServiceBinder) peekService(context, new Intent(context, SpeechToTextService.class));
