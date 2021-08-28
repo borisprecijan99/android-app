@@ -72,11 +72,6 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
         startListeningButton = findViewById(R.id.speakButton);
         speechTextView = findViewById(R.id.textViewSpeech);
 
-        /*AppDatabase.databaseExecutor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(this);
-            commands = db.commandDao().getAll();
-            jokes = db.jokeDao().getAll();
-        });*/
         global = (Global) getApplicationContext();
         commands = global.getCommands();
 
@@ -94,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
         if (!clicked) {
             speechToTextService.startListening();
         } else {
-            speechToTextService.cancel();
+            speechToTextService.stopListening();
         }
     }
 
@@ -120,9 +115,9 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
     protected void onDestroy() {
         textToSpeechService.shutdown();
         speechToTextService.destroy();
-        Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
+        /*Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
         intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_OFF");
-        sendBroadcast(intent);
+        sendBroadcast(intent);*/
         super.onDestroy();
     }
 
@@ -265,6 +260,54 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                         //String number = result.replaceAll("[a-zA-Z\\s]", "");
                         //textToSpeechService.speak("Pozivam broj telefona " + number + ".");
                         utils.call(result);
+                        break;
+                    case OPEN_FACEBOOK_REGEX:
+                        boolean isFacebookOpened = utils.openFacebook();
+                        if (isFacebookOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju Facebook.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija Facebook nije instalirana.");
+                        }
+                        break;
+                    case OPEN_MESSENGER_REGEX:
+                        boolean isMessengerOpened = utils.openMessenger();
+                        if (isMessengerOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju Messenger.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija Messenger nije instalirana.");
+                        }
+                        break;
+                    case OPEN_INSTAGRAM_REGEX:
+                        boolean isInstagramOpened = utils.openInstagram();
+                        if (isInstagramOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju Instagram.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija Instagram nije instalirana.");
+                        }
+                        break;
+                    case OPEN_YOUTUBE_REGEX:
+                        boolean isYouTubeOpened = utils.openYouTube();
+                        if (isYouTubeOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju YouTube.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija YouTube nije instalirana.");
+                        }
+                        break;
+                    case OPEN_GMAIL_REGEX:
+                        boolean isGmailOpened = utils.openGmail();
+                        if (isGmailOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju Gmail.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija Gmail nije instalirana.");
+                        }
+                        break;
+                    case OPEN_GOOGLE_CHROME_REGEX:
+                        boolean isGoogleChromeOpened = utils.openGoogleChrome();
+                        if (isGoogleChromeOpened) {
+                            textToSpeechService.speak("Otvaram aplikaciju Google Chrome.");
+                        } else {
+                            textToSpeechService.speak("Aplikacija Google Chrome nije instalirana.");
+                        }
                         break;
                 }
                 commandFound = true;

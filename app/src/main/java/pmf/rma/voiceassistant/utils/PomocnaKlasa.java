@@ -165,8 +165,6 @@ public class PomocnaKlasa {
 
     }
 
-    //...
-
     public void setAlarm() {
 
     }
@@ -175,24 +173,84 @@ public class PomocnaKlasa {
         smsManager.sendTextMessage(number, null, text, null, null);
     }
 
-    public void showAllMessages() {
-
+    //radi
+    public boolean openInstagram() {
+        try {
+            Uri uri = Uri.parse("https://www.instagram.com");
+            Intent instagramIntent = new Intent(Intent.ACTION_VIEW, uri);
+            instagramIntent.setPackage("com.instagram.android");
+            instagramIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(instagramIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void openInstagram() {
-
+    //radi
+    public boolean openFacebook() {
+        try {
+            //context.getPackageManager().getApplicationInfo("com.facebook.katana", 0);
+            Intent facebookIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://root"));
+            facebookIntent.setPackage("com.facebook.katana");
+            facebookIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(facebookIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void openFacebook() {
-
+    public boolean openMessenger() {
+        try {
+            context.getPackageManager().getApplicationInfo("com.facebook.orca", 0);
+            Intent messengerIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://messaging"));
+            //messengerIntent.setPackage("com.facebook.orca");
+            messengerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(messengerIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void openYouTube() {
-
+    //radi
+    public boolean openYouTube() {
+        try {
+            Intent youtubeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com"));
+            youtubeIntent.setPackage("com.google.android.youtube");
+            youtubeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(youtubeIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    public void getLocationOnMap() {
+    public boolean openGmail() {
+        try {
+            Intent gmailIntent = new Intent(Intent.ACTION_VIEW);
+            gmailIntent.setPackage("com.google.android.gm");
+            gmailIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(gmailIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
+    //radi
+    public boolean openGoogleChrome() {
+        try {
+            Uri uri = Uri.parse("https://www.google.com");
+            Intent chromeIntent = new Intent(Intent.ACTION_VIEW, uri);
+            chromeIntent.setPackage("com.android.chrome");
+            chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(chromeIntent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private List<String> scanDeviceForMp3Files(){
@@ -213,11 +271,7 @@ public class PomocnaKlasa {
             if (cursor != null) {
                 cursor.moveToFirst();
                 while (!cursor.isAfterLast()) {
-                    /*String title = cursor.getString(0);
-                    String artist = cursor.getString(1);*/
                     String path = cursor.getString(2);
-                    /*String displayName  = cursor.getString(3);
-                    String songDuration = cursor.getString(4);*/
                     cursor.moveToNext();
                     if (path != null && path.endsWith(".mp3")) {
                         mp3Files.add(path);

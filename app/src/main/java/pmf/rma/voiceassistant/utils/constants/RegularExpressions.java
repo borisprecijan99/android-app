@@ -13,11 +13,13 @@ public class RegularExpressions {
     public static final String TELL_A_JOKE_REGEX = "(?i)ispričaj(\\s+mi)?(\\s+neki)?\\s+vic";
     public static final String WHAT_TIME_IS_IT_REGEX = "(?i)koliko\\s+(je|ima)\\s+sati";
     public static final String WHAT_IS_THE_DATE_REGEX = "(?i)koji\\s+je\\s+(danas|današnji)\\s+datum";
-    public static final String PLAY_MUSIC_REGEX = "(i?)pusti\\s+(neku\\s+)?pesmu";
+    public static final String PLAY_MUSIC_REGEX = "(?i)pusti\\s+(neku\\s+)?pesmu";
     public static final String STOP_MUSIC_REGEX = "(?i)zaustavi\\s+pesmu";
     public static final String PAUSE_MUSIC_REGEX = "(?i)pauziraj\\s+pesmu";
-    public static final String OPEN_FACEBOOK_REGEX = "";
-    public static final String OPEN_INSTAGRAM_REGEX = "";
-    public static final String OPEN_YOUTUBE_REGEX = "";
-    public static final String OPEN_MESSENGER_REGEX = "";
+    public static final String OPEN_FACEBOOK_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?facebook";
+    public static final String OPEN_INSTAGRAM_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?instagram";
+    public static final String OPEN_YOUTUBE_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?youtube";
+    public static final String OPEN_MESSENGER_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?messenger";
+    public static final String OPEN_GMAIL_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?gmail";
+    public static final String OPEN_GOOGLE_CHROME_REGEX = "(?i)otvori\\s+(aplikaciju\\s+)?google\\s+chrome";
 }
