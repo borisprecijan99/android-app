@@ -1,12 +1,17 @@
 package pmf.rma.voiceassistant.utils;
 
-import android.app.AlarmManager;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -14,9 +19,11 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.telephony.SmsManager;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
@@ -24,12 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import pmf.rma.voiceassistant.Global;
 import pmf.rma.voiceassistant.database.entity.JokeEntity;
-import pmf.rma.voiceassistant.utils.constants.RegularExpressions;
 
 public class PomocnaKlasa {
     private final Context context;
@@ -38,13 +42,13 @@ public class PomocnaKlasa {
     private final WifiManager wifiManager;
     private final CameraManager cameraManager;
     private static MediaPlayer mediaPlayer;
+    private final LocationManager locationManager;
     private final List<String> mp3Files;
     private final Random random;
-    private Pattern pattern;
-    private static boolean isPaused;
-    private Global global;
+    private final Global global;
     private final List<JokeEntity> jokes;
-    private final AlarmManager alarmManager;
+    private final Geocoder geocoder;
+    private double latitude, longitude;
 
     //smisliti naziv klase
     public PomocnaKlasa(Context context) {
@@ -53,12 +57,12 @@ public class PomocnaKlasa {
         this.smsManager = SmsManager.getDefault();
         this.wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        this.alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         this.mp3Files = scanDeviceForMp3Files();
         this.random = new Random();
-        this.pattern = null;
         this.global = (Global) context.getApplicationContext();
         this.jokes = global.getJokes();
+        this.geocoder = new Geocoder(context, Locale.getDefault());
     }
 
     public String tellAJoke() {
@@ -145,39 +149,29 @@ public class PomocnaKlasa {
     @RequiresApi(Build.VERSION_CODES.Q)
     public void wifiSettings() {
         Intent wifiSettingsIntent = new Intent(Settings.Panel.ACTION_WIFI);
+        wifiSettingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(wifiSettingsIntent);
     }
 
-    public void call(/*String number*/String speech) {
-        /*Pattern pattern = Pattern.compile("vre");
-        Matcher matcher = pattern.matcher("");*/
-        pattern = Pattern.compile(RegularExpressions.PHONE_CALL_REGEX);
-        Matcher matcher = pattern.matcher(speech);
-        String number = null;
-        if (matcher.find()) {
-            number = matcher.group("broj");
-        }
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + Uri.encode(number)));
+    public void makeAPhoneCall(String speech) {
+        speech = speech.toLowerCase();
+        speech = speech.replaceAll("zvezda", "*");
+        speech = speech.replaceAll("taraba", "#");
+        speech = speech.replaceAll("[a-z\\s]", "");
+        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + Uri.encode(speech)));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 
-    public void takeAScreenshot() {
-
-    }
-
-    public void setAlarm() {
-
-    }
-
-    public void sendMessage(String number, String text) {
+    public void sendMessage(String speech) {
+        String number = "";
+        String text = "";
         smsManager.sendTextMessage(number, null, text, null, null);
     }
 
-    //radi
     public boolean openInstagram() {
         try {
-            Uri uri = Uri.parse("https://www.instagram.com");
-            Intent instagramIntent = new Intent(Intent.ACTION_VIEW, uri);
+            Intent instagramIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com"));
             instagramIntent.setPackage("com.instagram.android");
             instagramIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(instagramIntent);
@@ -187,12 +181,10 @@ public class PomocnaKlasa {
         }
     }
 
-    //radi
     public boolean openFacebook() {
         try {
-            //context.getPackageManager().getApplicationInfo("com.facebook.katana", 0);
+            context.getPackageManager().getApplicationInfo("com.facebook.katana", 0);
             Intent facebookIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://root"));
-            facebookIntent.setPackage("com.facebook.katana");
             facebookIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(facebookIntent);
             return true;
@@ -205,7 +197,6 @@ public class PomocnaKlasa {
         try {
             context.getPackageManager().getApplicationInfo("com.facebook.orca", 0);
             Intent messengerIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://messaging"));
-            //messengerIntent.setPackage("com.facebook.orca");
             messengerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(messengerIntent);
             return true;
@@ -214,11 +205,10 @@ public class PomocnaKlasa {
         }
     }
 
-    //radi
     public boolean openYouTube() {
         try {
+            context.getPackageManager().getApplicationInfo("com.google.android.youtube", 0);
             Intent youtubeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com"));
-            youtubeIntent.setPackage("com.google.android.youtube");
             youtubeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(youtubeIntent);
             return true;
@@ -227,9 +217,11 @@ public class PomocnaKlasa {
         }
     }
 
+    //ne radi
     public boolean openGmail() {
         try {
-            Intent gmailIntent = new Intent(Intent.ACTION_VIEW);
+            //context.getPackageManager().getApplicationInfo("com.google.android.gm", 0);
+            Intent gmailIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox"));
             gmailIntent.setPackage("com.google.android.gm");
             gmailIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(gmailIntent);
@@ -239,17 +231,47 @@ public class PomocnaKlasa {
         }
     }
 
-    //radi
     public boolean openGoogleChrome() {
         try {
-            Uri uri = Uri.parse("https://www.google.com");
-            Intent chromeIntent = new Intent(Intent.ACTION_VIEW, uri);
-            chromeIntent.setPackage("com.android.chrome");
+            context.getPackageManager().getApplicationInfo("com.android.chrome", 0);
+            Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com"));
             chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(chromeIntent);
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    private void setLatitude(double newLatitude) {
+        this.latitude = newLatitude;
+    }
+
+    private void setLongitude(double newLongitude) {
+        this.longitude = newLongitude;
+    }
+
+    @SuppressLint("MissingPermission")
+    public String getLocation() {
+        LocationListener locationListener = location -> {
+            setLatitude(location.getLatitude());
+            setLongitude(location.getLongitude());
+        };
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        String provider = locationManager.getBestProvider(criteria, true);
+        locationManager.requestLocationUpdates(provider, 2000, 1, locationListener);
+        Toast.makeText(context, latitude + ", " + longitude, Toast.LENGTH_LONG).show();
+        if (latitude == 0.0 && longitude == 0.0) {
+            return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
+        } else {
+            try {
+                List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                String address = addresses.get(0).getAddressLine(0);
+                return "Vaša trenutna lokacija je " + address + ".";
+            } catch (IOException e) {
+                return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
+            }
         }
     }
 
@@ -291,28 +313,32 @@ public class PomocnaKlasa {
     public void playMusic() {
         int size = mp3Files.size();
         int index = random.nextInt(size);
-        if (mediaPlayer == null) {
+        /*if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(context, Uri.parse(mp3Files.get(index)));
         }
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
-            isPaused = false;
-        }
-    }
-
-    public void stopMusic() {
+        }*/
         if (mediaPlayer != null) {
-            isPaused = false;
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
+            if (!mediaPlayer.isPlaying()) {
+                if (mediaPlayer.getCurrentPosition() == mediaPlayer.getDuration()) {
+                    mediaPlayer.stop();
+                    mediaPlayer = null;
+                } else {
+                    mediaPlayer.start();
+                }
+            }
+        } else {
+            mediaPlayer = MediaPlayer.create(context, Uri.parse(mp3Files.get(index)));
+            mediaPlayer.start();
         }
     }
 
     public void pauseMusic() {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            isPaused = true;
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            }
         }
     }
 }

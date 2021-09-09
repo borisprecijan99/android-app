@@ -1,25 +1,6 @@
 package pmf.rma.voiceassistant.receivers;
 
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_FACEBOOK_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_GMAIL_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_GOOGLE_CHROME_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_INSTAGRAM_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_MESSENGER_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.OPEN_YOUTUBE_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.PAUSE_MUSIC_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.PHONE_CALL_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.PLAY_MUSIC_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.STOP_MUSIC_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TAKE_A_SCREENSHOT_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TELL_A_JOKE_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_OFF_BLUETOOTH_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_OFF_FLASHLIGHT_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_OFF_WIFI_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_ON_BLUETOOTH_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_ON_FLASHLIGHT_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.TURN_ON_WIFI_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.WHAT_IS_THE_DATE_REGEX;
-import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.WHAT_TIME_IS_IT_REGEX;
+import static pmf.rma.voiceassistant.utils.constants.RegularExpressions.*;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -42,16 +23,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.ResponseBody;
 import pmf.rma.voiceassistant.Global;
 import pmf.rma.voiceassistant.database.entity.CommandEntity;
-import pmf.rma.voiceassistant.database.entity.JokeEntity;
 import pmf.rma.voiceassistant.services.http.GoogleKnowledgeGraphSearchApi;
 import pmf.rma.voiceassistant.services.http.RetrofitClient;
-import pmf.rma.voiceassistant.ui.R;
+import pmf.rma.voiceassistant.R;
 import pmf.rma.voiceassistant.services.SpeechToTextService;
 import pmf.rma.voiceassistant.services.SpeechToTextServiceCallback;
 import pmf.rma.voiceassistant.services.TextToSpeechService;
@@ -229,10 +208,6 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
                                 textToSpeechService.speak("WiFi je već isključen.");
                         }
                         break;
-                    case TAKE_A_SCREENSHOT_REGEX:
-                        utils.takeAScreenshot();
-                        textToSpeechService.speak("Pravim snimak ekrana.");
-                        break;
                     case WHAT_TIME_IS_IT_REGEX:
                         String time = utils.whatTimeIsIt();
                         textToSpeechService.speak(time);
@@ -245,18 +220,12 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
                         textToSpeechService.speak("Tražim neku pesmu na Vašem uređaju.");
                         utils.playMusic();
                         break;
-                    case STOP_MUSIC_REGEX:
-                        textToSpeechService.speak("Zaustavljam pesmu.");
-                        utils.stopMusic();
-                        break;
                     case PAUSE_MUSIC_REGEX:
                         textToSpeechService.speak("Pauziram pesmu.");
                         utils.pauseMusic();
                         break;
                     case PHONE_CALL_REGEX:
-                        //String number = result.replaceAll("[a-zA-Z\\s]", "");
-                        //textToSpeechService.speak("Pozivam broj telefona " + number + ".");
-                        utils.call(result);
+                        utils.makeAPhoneCall(result);
                         break;
                     case OPEN_FACEBOOK_REGEX:
                         boolean isFacebookOpened = utils.openFacebook();
@@ -305,6 +274,10 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
                         } else {
                             textToSpeechService.speak("Aplikacija Google Chrome nije instalirana.");
                         }
+                        break;
+                    case GET_LOCATION_REGEX:
+                        String location = utils.getLocation();
+                        textToSpeechService.speak(location);
                         break;
                 }
                 commandFound = true;

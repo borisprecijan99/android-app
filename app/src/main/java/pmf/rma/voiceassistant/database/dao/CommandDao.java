@@ -14,9 +14,6 @@ public interface CommandDao {
     @Query(value = "SELECT * FROM command")
     List<CommandEntity> getAll();
 
-    @Query(value = "SELECT * FROM command WHERE name=:name")
-    CommandEntity getByName(String name);
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<CommandEntity> commandEntityList);
 }

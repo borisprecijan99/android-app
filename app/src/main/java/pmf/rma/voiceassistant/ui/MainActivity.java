@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import okhttp3.ResponseBody;
 import pmf.rma.voiceassistant.Global;
+import pmf.rma.voiceassistant.R;
 import pmf.rma.voiceassistant.database.entity.CommandEntity;
 import pmf.rma.voiceassistant.utils.CyrillicLatinConverter;
 import pmf.rma.voiceassistant.services.http.GoogleKnowledgeGraphSearchApi;
@@ -67,7 +69,8 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.CALL_PHONE, Manifest.permission.BLUETOOTH,
                 Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.SEND_SMS,
-                Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+                Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PackageManager.PERMISSION_GRANTED);
 
         startListeningButton = findViewById(R.id.speakButton);
         speechTextView = findViewById(R.id.textViewSpeech);
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
         googleKnowledgeGraphSearchApi = RetrofitClient.getInstance().getGoogleKnowledgeGraphSearchApi();
     }
 
+    @SuppressLint("MissingPermission")
     public void onButtonClick(View view) {
         if (!clicked) {
             speechToTextService.startListening();
@@ -232,10 +236,6 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                                 textToSpeechService.speak("WiFi je već isključen.");
                         }
                         break;
-                    case TAKE_A_SCREENSHOT_REGEX:
-                        utils.takeAScreenshot();
-                        textToSpeechService.speak("Pravim snimak ekrana.");
-                        break;
                     case WHAT_TIME_IS_IT_REGEX:
                         String time = utils.whatTimeIsIt();
                         textToSpeechService.speak(time);
@@ -248,18 +248,12 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                         textToSpeechService.speak("Tražim neku pesmu na Vašem uređaju.");
                         utils.playMusic();
                         break;
-                    case STOP_MUSIC_REGEX:
-                        textToSpeechService.speak("Zaustavljam pesmu.");
-                        utils.stopMusic();
-                        break;
                     case PAUSE_MUSIC_REGEX:
                         textToSpeechService.speak("Pauziram pesmu.");
                         utils.pauseMusic();
                         break;
                     case PHONE_CALL_REGEX:
-                        //String number = result.replaceAll("[a-zA-Z\\s]", "");
-                        //textToSpeechService.speak("Pozivam broj telefona " + number + ".");
-                        utils.call(result);
+                        utils.makeAPhoneCall(result);
                         break;
                     case OPEN_FACEBOOK_REGEX:
                         boolean isFacebookOpened = utils.openFacebook();
@@ -308,6 +302,10 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                         } else {
                             textToSpeechService.speak("Aplikacija Google Chrome nije instalirana.");
                         }
+                        break;
+                    case GET_LOCATION_REGEX:
+                        String location = utils.getLocation();
+                        textToSpeechService.speak(location);
                         break;
                 }
                 commandFound = true;
