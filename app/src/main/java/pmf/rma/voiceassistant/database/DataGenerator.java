@@ -23,7 +23,7 @@ public class DataGenerator {
                 "PLAY_MUSIC", "PAUSE_MUSIC", "PHONE_CALL",
                 "OPEN_FACEBOOK", "OPEN_MESSENGER", "OPEN_INSTAGRAM",
                 "OPEN_YOUTUBE", "OPEN_GMAIL", "OPEN_GOOGLE_CHROME",
-                "GET_LOCATION"
+                "GET_LOCATION", "SEARCH", "SHOW_CONTACTS", "SEND_SMS"
         };
         regularExpressions = new String[] {
                 TURN_ON_BLUETOOTH_REGEX, TURN_OFF_BLUETOOTH_REGEX,
@@ -33,15 +33,14 @@ public class DataGenerator {
                 PLAY_MUSIC_REGEX, PAUSE_MUSIC_REGEX, PHONE_CALL_REGEX,
                 OPEN_FACEBOOK_REGEX, OPEN_MESSENGER_REGEX, OPEN_INSTAGRAM_REGEX,
                 OPEN_YOUTUBE_REGEX, OPEN_GMAIL_REGEX, OPEN_GOOGLE_CHROME_REGEX,
-                GET_LOCATION_REGEX
+                GET_LOCATION_REGEX, SEARCH_REGEX, SHOW_CONTACTS_REGEX, SEND_SMS_REGEX
         };
         titles = new String[] {
                 "Jedno pitanje"
         };
         texts = new String[] {
                 "Perice, postaviću ti samo jedno pitanje, ali odgovor mora biti brz! " +
-                        "Dobro, spreman sam. " +
-                        "Koliko je 17 puta 4? Brz!"
+                        "Dobro, spreman sam. Koliko je 17 puta 4? Brz!"
         };
     }
 

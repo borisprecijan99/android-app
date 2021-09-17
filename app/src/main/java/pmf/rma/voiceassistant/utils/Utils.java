@@ -16,14 +16,12 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.telephony.SmsManager;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
@@ -35,32 +33,36 @@ import java.util.Random;
 import pmf.rma.voiceassistant.Global;
 import pmf.rma.voiceassistant.database.entity.JokeEntity;
 
-public class PomocnaKlasa {
+public class Utils {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
-    private final SmsManager smsManager;
     private final WifiManager wifiManager;
     private final CameraManager cameraManager;
     private static MediaPlayer mediaPlayer;
-    private final LocationManager locationManager;
     private final List<String> mp3Files;
     private final Random random;
-    private final Global global;
     private final List<JokeEntity> jokes;
     private final Geocoder geocoder;
     private double latitude, longitude;
 
-    //smisliti naziv klase
-    public PomocnaKlasa(Context context) {
+    @SuppressLint("MissingPermission")
+    public Utils(Context context) {
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.smsManager = SmsManager.getDefault();
         this.wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         this.cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locationListener = location -> {
+            setLatitude(location.getLatitude());
+            setLongitude(location.getLongitude());
+        };
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        String provider = locationManager.getBestProvider(criteria, true);
+        locationManager.requestLocationUpdates(provider, 2000, 1, locationListener);
         this.mp3Files = scanDeviceForMp3Files();
         this.random = new Random();
-        this.global = (Global) context.getApplicationContext();
+        Global global = (Global) context.getApplicationContext();
         this.jokes = global.getJokes();
         this.geocoder = new Geocoder(context, Locale.getDefault());
     }
@@ -164,9 +166,18 @@ public class PomocnaKlasa {
     }
 
     public void sendMessage(String speech) {
-        String number = "";
-        String text = "";
-        smsManager.sendTextMessage(number, null, text, null, null);
+        speech = speech.toLowerCase().replace("pošalji poruku na broj ", "");
+        speech = speech.replaceAll("\\s", "");
+        Intent sendMessageIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("sms:" + speech));
+        sendMessageIntent.setPackage("com.google.android.apps.messaging");
+        sendMessageIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(sendMessageIntent);
+    }
+
+    public void showContacts() {
+        Intent contactsIntent = new Intent(Intent.ACTION_VIEW, ContactsContract.Contacts.CONTENT_URI);
+        contactsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(contactsIntent);
     }
 
     public boolean openInstagram() {
@@ -217,12 +228,10 @@ public class PomocnaKlasa {
         }
     }
 
-    //ne radi
     public boolean openGmail() {
         try {
-            //context.getPackageManager().getApplicationInfo("com.google.android.gm", 0);
-            Intent gmailIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox"));
-            gmailIntent.setPackage("com.google.android.gm");
+            Intent gmailIntent = new Intent(Intent.ACTION_VIEW);
+            gmailIntent.setClassName("com.google.android.gm", "com.google.android.gm.ConversationListActivityGmail");
             gmailIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(gmailIntent);
             return true;
@@ -253,15 +262,6 @@ public class PomocnaKlasa {
 
     @SuppressLint("MissingPermission")
     public String getLocation() {
-        LocationListener locationListener = location -> {
-            setLatitude(location.getLatitude());
-            setLongitude(location.getLongitude());
-        };
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String provider = locationManager.getBestProvider(criteria, true);
-        locationManager.requestLocationUpdates(provider, 2000, 1, locationListener);
-        Toast.makeText(context, latitude + ", " + longitude, Toast.LENGTH_LONG).show();
         if (latitude == 0.0 && longitude == 0.0) {
             return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
         } else {
@@ -269,7 +269,7 @@ public class PomocnaKlasa {
                 List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
                 String address = addresses.get(0).getAddressLine(0);
                 return "Vaša trenutna lokacija je " + address + ".";
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
             }
         }
