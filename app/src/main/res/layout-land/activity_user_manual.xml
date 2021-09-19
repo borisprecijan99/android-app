@@ -10,14 +10,15 @@
 
     <TextView
         android:id="@+id/userManualTextView"
-        android:layout_width="340dp"
-        android:layout_height="630dp"
+        android:layout_width="650dp"
+        android:layout_height="280dp"
         android:scrollbars="vertical"
         android:textSize="17sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.712" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

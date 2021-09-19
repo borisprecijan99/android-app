@@ -10,9 +10,9 @@
 
     <ImageButton
         android:id="@+id/speakButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="48dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="64dp"
         android:background="@null"
         android:onClick="onButtonClick"
         android:scaleType="centerInside"
@@ -24,8 +24,8 @@
 
     <TextView
         android:id="@+id/textViewSpeech"
-        android:layout_width="341dp"
-        android:layout_height="530dp"
+        android:layout_width="441dp"
+        android:layout_height="630dp"
         android:gravity="center"
         android:text="@string/textview_text"
         android:textSize="34sp"

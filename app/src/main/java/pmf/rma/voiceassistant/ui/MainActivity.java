@@ -241,12 +241,12 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                 textToSpeechService.speak(date);
                 break;
             case PLAY_MUSIC_REGEX:
-                textToSpeechService.speak(getString(R.string.playMusic));
-                utils.playMusic();
+                String playMusic = utils.playMusic();
+                textToSpeechService.speak(playMusic);
                 break;
             case PAUSE_MUSIC_REGEX:
-                textToSpeechService.speak(getString(R.string.pauseMusic));
-                utils.pauseMusic();
+                String pauseMusic = utils.pauseMusic();
+                textToSpeechService.speak(pauseMusic);
                 break;
             case PHONE_CALL_REGEX:
                 utils.makeAPhoneCall(result);

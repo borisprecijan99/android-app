@@ -310,35 +310,25 @@ public class Utils {
         return mp3Files;
     }
 
-    public void playMusic() {
+    public String playMusic() {
         int size = mp3Files.size();
         int index = random.nextInt(size);
-        /*if (mediaPlayer == null) {
+
+        if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(context, Uri.parse(mp3Files.get(index)));
         }
-        if (!mediaPlayer.isPlaying()) {
+        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
             mediaPlayer.start();
-        }*/
-        if (mediaPlayer != null) {
-            if (!mediaPlayer.isPlaying()) {
-                if (mediaPlayer.getCurrentPosition() == mediaPlayer.getDuration()) {
-                    mediaPlayer.stop();
-                    mediaPlayer = null;
-                } else {
-                    mediaPlayer.start();
-                }
-            }
-        } else {
-            mediaPlayer = MediaPlayer.create(context, Uri.parse(mp3Files.get(index)));
-            mediaPlayer.start();
+            return "Puštam pesmu";
         }
+        return "Pesma je već pustena.";
     }
 
-    public void pauseMusic() {
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.pause();
-            }
+    public String pauseMusic() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            return "Pauziram pesmu.";
         }
+        return "Nijedna pesma nije puštena.";
     }
 }

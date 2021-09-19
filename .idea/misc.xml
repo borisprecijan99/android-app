@@ -4,9 +4,13 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-land/activity_main.xml" value="0.428125" />
+        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-land/activity_user_manual.xml" value="0.4015625" />
+        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-sw600dp-land/activity_main.xml" value="0.60234375" />
+        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-sw600dp-land/activity_user_manual.xml" value="0.60234375" />
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-sw600dp/activity_main.xml" value="0.55" />
+        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout-sw600dp/activity_user_manual.xml" value="0.55" />
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
-        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout/activity_user_manual.xml" value="0.17864583333333334" />
+        <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout/activity_user_manual.xml" value="0.2804878048780488" />
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout/notification_collapsed.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/layout/notification_expanded.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Precijan/Desktop/voice-assistant-android-app/app/src/main/res/menu/menu.xml" value="0.36666666666666664" />

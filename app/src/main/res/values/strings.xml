@@ -33,4 +33,120 @@
     <string name="playMusic">Tražim neku pesmu na Vašem uređaju.</string>
     <string name="pauseMusic">Pauziram pesmu.</string>
     <string name="openMessagesApp">Otvaram aplikaciju za slanje poruka.</string>
+    <string name="userManualText">
+        <![CDATA[
+        <p>Glasovni pomoćnik je aplikacija koja Vam omogućava da glasom izvršite neke radnje na Vašem uređaju brzo i lako.
+        Ovde će detaljno biti objašnjeno kako se koristi aplikacija Glasovni pomoćnik.</p>
+        <br><br>
+        <h4>Lista komandi koje je moguće izvršiti</h4>
+        <br>
+        <ul>
+            <li>Uključivanje/isključivanje Bluetooth-a</li>
+            <li>Uključivanje/isključivanje WiFi-a</li>
+            <li>Uključivanje/isključivanje lampe</li>
+            <li>Otvaranje aplikacije Facebook</li>
+            <li>Otvaranje aplikacije Messenger</li>
+            <li>Otvaranje aplikacije Instagram</li>
+            <li>Otvaranje aplikacije YouTube</li>
+            <li>Otvaranje aplikacije Gmail</li>
+            <li>Otvaranje aplikacije Google Chrome</li>
+            <li>Utvrđivanje Vaše lokacije (država, grad, ulica i broj)</li>
+            <li>Pričanje viceva</li>
+            <li>Utvrđivanje datuma</li>
+            <li>Utvrđivanje koliko ima sati</li>
+            <li>Reprodukcija muzike</li>
+            <li>Pozivanje određenog broja telefona</li>
+            <li>Slanje poruke na određeni broj telefona</li>
+            <li>Prikazivanje kontakata</li>
+            <li>Pretraga pojma</li>
+        </ul>
+        <br><br>
+        <h4>Uključivanje/isključivanje Bluetooth-a</h4>
+        <br>
+        <p>Da biste uključili Bluetooth, potrebno je da izgovorite <i>Uključi/upali Bluetooth</i>,
+        a da biste ga isključili potrebno je da kažete <i>Isključi/ugasi Bluetooth</i>.</p>
+        <br><br>
+        <h4>Uključivanje/isključivanje WiFi-a</h4>
+        <br>
+        <p>Da biste uključili WiFi, potrebno je da izgovorite <i>Uključi/upali WiFi</i>,
+        a da biste ga isključili potrebno je da kažete <i>Isključi/ugasi WiFi</i>.</p>
+        <br><br>
+        <h4>Uključivanje/isključivanje lampe</h4>
+        <br>
+        <p>Da biste uključili lampu, potrebno je da izgovorite <i>Uključi/upali lampu</i>,
+        a da biste je isključili potrebno je da kažete <i>Isključi/ugasi lampu</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije Facebook</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju Facebook, potrebno je da izgovorite <i>Otvori aplikaciju Facebook</i>,
+        ili samo <i>Otvori Facebook</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije Messenger</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju Messenger, potrebno je da izgovorite <i>Otvori aplikaciju Messenger</i>,
+        ili samo <i>Otvori Messenger</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije Instagram</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju Instagram, potrebno je da izgovorite <i>Otvori aplikaciju Instagram</i>,
+        ili samo <i>Otvori Instagram</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije YouTube</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju YouTube, potrebno je da izgovorite <i>Otvori aplikaciju YouTube</i>,
+        ili samo <i>Otvori YouTube</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije Gmail</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju Gmail, potrebno je da izgovorite <i>Otvori aplikaciju Gmail</i>,
+        ili samo <i>Otvori Gmail</i>.</p>
+        <br><br>
+        <h4>Otvaranje aplikacije Google Chrome</h4>
+        <br>
+        <p>Da biste otvorili aplikaciju Google Chrome, potrebno je da izgovorite <i>Otvori aplikaciju Google Chrome</i>,
+        ili samo <i>Otvori Google Chrome</i>.</p>
+        <br><br>
+        <h4>Utvrđivanje Vaše lokacije (država, grad, ulica i broj)</h4>
+        <br>
+        <p>Da biste saznali Vašu trenutnu lokaciju, potrebno je da izgovorite <i>Reci mi gde se trenutno nalazim</i>
+        ili <i>Reci mi gde se nalazim</i>.</p>
+        <br><br>
+        <h4>Pričanje viceva</h4>
+        <br>
+        <p>Da biste čuli neki vic, potrebno je da izgovorite <i>Ispričaj mi neki vic</i>.</p>
+        <br><br>
+        <h4>Utvrđivanje datuma</h4>
+        <br>
+        <p>Da biste saznali koji je datum, potrebno je da izgovorite <i>Koji je danas/današnji datum</i>.</p>
+        <br><br>
+        <h4>Utvrđivanje koliko ima sati</h4>
+        <br>
+        <p>Da biste saznali koliko ima sati, potrebno je da izgovorite <i>Koliko je sati</i>
+        ili <i>Koliko ima sati</i>.</p>
+        <br><br>
+        <h4>Reprodukcija muzike</h4>
+        <br>
+        <p>Da biste pustili neku pesmu, potrebno je da izgovorite <i>Pusti pesmu</i>,
+        a da biste je pauzirali, potrebno je da izgovorite <i>Pauziraj pesmu</i>.</p>
+        <br><br>
+        <h4>Pozivanje određenog broja telefona</h4>
+        <br>
+        <p>Da biste pozvali određeni broj telefona, potrebno je da izgovorite <i>Pozovi broj</i>,
+        a zatim i broj telefona koji želite pozvati.</p>
+        <br><br>
+        <h4>Slanje poruke na određeni broj telefona</h4>
+        <br>
+        <p>Da biste poslali poruku na određeni broj telefona, potrebno je da izgovorite <i>Pošalji poruku na broj</i>,
+        a zatim i broj telefona na koji želite poslati poruku.</p>
+        <br><br>
+        <h4>Prikazivanje kontakata</h4>
+        <br>
+        <p>Da bi Vam se prikazali kontakti, potrebno je da izgovorite <i>Prikaži kontakte</i>.</p>
+        <br><br>
+        <h4>Pretraga pojma</h4>
+        <br>
+        <p>Da biste pretražili neki pojam, potrebno je da izgovorite <i>Pretraži</i>,
+        a zatim i pojam koji Vas interesuje.</p>
+        ]]>
+    </string>
 </resources>
