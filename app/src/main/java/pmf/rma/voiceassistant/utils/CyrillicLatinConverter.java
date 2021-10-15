@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CyrillicLatinConverter {
-    private static final char[] cyrilic = new char[] {
+    private static final char[] cyrillic = new char[] {
             '\u0410', 	'\u0430',	//A
             '\u0411',	'\u0431',	//B
             '\u0412', 	'\u0432',	//V
@@ -73,20 +73,20 @@ public class CyrillicLatinConverter {
     private static final Map<String, Character> latMapping = new HashMap<>();
 
     static {
-        for (int i=0; i < cyrilic.length; i++) {
-            cyrMapping.put(cyrilic[i], latin[i]);
-            latMapping.put(latin[i], cyrilic[i]);
+        for (int i = 0; i < cyrillic.length; i++) {
+            cyrMapping.put(cyrillic[i], latin[i]);
+            latMapping.put(latin[i], cyrillic[i]);
         }
     }
 
     public static String latinToCyrillic(String latinText) {
-        StringBuffer latBuffer = new StringBuffer(latinText);
-        StringBuffer cyrBuffer = new StringBuffer();
+        StringBuilder latBuilder = new StringBuilder(latinText);
+        StringBuilder cyrBuilder = new StringBuilder();
 
-        for (int i=0; i < latBuffer.length(); i++) {
-            String s = latBuffer.substring(i, i+1);
-            if (i < latBuffer.length() - 1 ) {
-                char c = latBuffer.charAt(i+1);
+        for (int i = 0; i < latBuilder.length(); i++) {
+            String s = latBuilder.substring(i, i + 1);
+            if (i < latBuilder.length() - 1 ) {
+                char c = latBuilder.charAt(i + 1);
                 if (((s.equals("L") || s.equals("l")
                         || s.equals("N") || s.equals("n")) && (c == 'J' || c == 'j'))) {
                     s = s + 'j';
@@ -98,26 +98,26 @@ public class CyrillicLatinConverter {
                 }
             }
             if (latMapping.containsKey(s)) {
-                cyrBuffer.append(((Character)latMapping.get(s)).charValue());
+                cyrBuilder.append(latMapping.get(s));
             } else {
-                cyrBuffer.append(s);
+                cyrBuilder.append(s);
             }
         }
-        return cyrBuffer.toString();
+        return cyrBuilder.toString();
     }
 
-    public static String cyrilicToLatin(String cyrillicText) {
-        StringBuffer cyrBuffer = new StringBuffer(cyrillicText);
-        StringBuffer latinBuffer = new StringBuffer();
-        for (int i = 0; i < cyrBuffer.length(); i++) {
-            char c = cyrBuffer.charAt(i);
-            Character character = new Character(c);
+    public static String cyrillicToLatin(String cyrillicText) {
+        StringBuilder cyrBuilder = new StringBuilder(cyrillicText);
+        StringBuilder latBuilder = new StringBuilder();
+        for (int i = 0; i < cyrBuilder.length(); i++) {
+            char c = cyrBuilder.charAt(i);
+            Character character = c;
             if (cyrMapping.containsKey(character)) {
-                latinBuffer.append(cyrMapping.get(character));
+                latBuilder.append(cyrMapping.get(character));
             } else {
-                latinBuffer.append(c);
+                latBuilder.append(c);
             }
         }
-        return latinBuffer.toString();
+        return latBuilder.toString();
     }
 }

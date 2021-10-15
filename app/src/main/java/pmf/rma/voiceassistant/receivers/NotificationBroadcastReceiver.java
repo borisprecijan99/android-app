@@ -44,13 +44,12 @@ import retrofit2.Response;
 
 public class NotificationBroadcastReceiver extends BroadcastReceiver implements SpeechToTextServiceCallback {
     private static final String CHANNEL_ID = "notificationChannel";
-    private NotificationChannelCompat notificationChannel;
     private NotificationManagerCompat notificationManager;
     private SpeechToTextService speechToTextService;
     private TextToSpeechService textToSpeechService;
     private Context context;
     private Utils utils;
-    private static boolean clicked;
+    private static boolean startedlistening;
     private Notification notification;
     private List<CommandEntity> commands;
     private GoogleKnowledgeGraphSearchApi googleKnowledgeGraphSearchApi;
@@ -64,7 +63,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
 
         googleKnowledgeGraphSearchApi = RetrofitClient.getInstance().getGoogleKnowledgeGraphSearchApi();
 
-        notificationChannel = new NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_LOW)
+        NotificationChannelCompat notificationChannel = new NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_LOW)
                 .setDescription("Notifikacije koje dolaze od aplikacije Glasovni pomoćnik")
                 .setName("Glasovni pomoćnik")
                 .build();
@@ -90,8 +89,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
         } else if (intent.getAction().equals("pmf.rma.voiceassistant.NOTIFICATIONS_OFF")) {
             speechToTextService.stopForeground(true);
         } else if (intent.getAction().equals("pmf.rma.voiceassistant.CLICK")) {
-            speechToTextService.setSpeechToTextCallback(this);
-            if (!clicked) {
+            if (!startedlistening) {
                 speechToTextService.startListening();
             } else {
                 speechToTextService.stopListening();
@@ -109,14 +107,14 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
         intent.setAction("pmf.rma.voiceassistant.CLICK");
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         expanded.setOnClickPendingIntent(R.id.imageButton2, pendingIntent);
-        expanded.setImageViewResource(R.id.imageButton2, !clicked ? R.drawable.microphone : R.drawable.microphone_off);
+        expanded.setImageViewResource(R.id.imageButton2, !startedlistening ? R.drawable.microphone : R.drawable.microphone_off);
         return expanded;
     }
 
     @Override
     public void onResults(Bundle results) {
         String result = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).get(0);
-        clicked = false;
+        startedlistening = false;
         notification = createNotification();
         notificationManager.notify(1, notification);
         processTheResults(result);
@@ -124,14 +122,14 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
 
     @Override
     public void onReadyForSpeech(Bundle params) {
-        clicked = true;
+        startedlistening = true;
         notification = createNotification();
         notificationManager.notify(1, notification);
     }
 
     @Override
     public void onError(int error) {
-        clicked = false;
+        startedlistening = false;
         notification = createNotification();
         notificationManager.notify(1, notification);
     }
@@ -297,7 +295,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
 
     private void search(String result) {
         String finalResult = result.toLowerCase().replace("pretraži ", "");
-        googleKnowledgeGraphSearchApi.getResult(finalResult).enqueue(
+        /*googleKnowledgeGraphSearchApi.getResult(finalResult).enqueue(
                 new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -312,7 +310,7 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
                                 int minDistance = Integer.MAX_VALUE;
                                 for (Object element: elements) {
                                     name = JsonPath.read(element, "$.result.name").toString();
-                                    name = CyrillicLatinConverter.cyrilicToLatin(name);
+                                    name = CyrillicLatinConverter.cyrillicToLatin(name).toLowerCase();
                                     int currentDistance = StringEditDistance.getEditDistance(name, finalResult);
                                     if (currentDistance < minDistance){
                                         minDistance = currentDistance;
@@ -336,6 +334,6 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver implements 
                         textToSpeechService.speak(context.getString(R.string.resultNotFound));
                     }
                 }
-        );
+        );*/
     }
 }

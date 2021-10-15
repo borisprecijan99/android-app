@@ -9,5 +9,6 @@ public interface GoogleKnowledgeGraphSearchApi {
     String BASE_URL = "https://kgsearch.googleapis.com/";
 
     @GET(value = "v1/entities:search?key=AIzaSyDLwwdIVAvEsfeSjHAWK-AanAsar6ZaqqQ&indent=True&languages=sr")
-    Call<ResponseBody> getResult(@Query(value = "query") String query);
+    //Call<ResponseBody> getResult(@Query(value = "query") String query);
+    Call<GoogleKnowledgeGraphSearchApiResults> getResult(@Query(value = "query") String query);
 }

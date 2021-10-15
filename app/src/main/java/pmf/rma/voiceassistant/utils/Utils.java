@@ -263,14 +263,14 @@ public class Utils {
     @SuppressLint("MissingPermission")
     public String getLocation() {
         if (latitude == 0.0 && longitude == 0.0) {
-            return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
+            return "Ne mogu da utvrdim Vašu lokaciju.";
         } else {
             try {
                 List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
                 String address = addresses.get(0).getAddressLine(0);
                 return "Vaša trenutna lokacija je " + address + ".";
             } catch (Exception e) {
-                return "Ne mogu da utvrdim Vašu lokaciju. Proverite internet konekciju i pokušajte ponovo.";
+                return "Ne mogu da utvrdim Vašu lokaciju.";
             }
         }
     }

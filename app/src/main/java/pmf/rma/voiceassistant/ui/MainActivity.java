@@ -36,6 +36,7 @@ import okhttp3.ResponseBody;
 import pmf.rma.voiceassistant.Global;
 import pmf.rma.voiceassistant.R;
 import pmf.rma.voiceassistant.database.entity.CommandEntity;
+import pmf.rma.voiceassistant.services.http.GoogleKnowledgeGraphSearchApiResults;
 import pmf.rma.voiceassistant.utils.CyrillicLatinConverter;
 import pmf.rma.voiceassistant.services.http.GoogleKnowledgeGraphSearchApi;
 import pmf.rma.voiceassistant.receivers.NotificationBroadcastReceiver;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
     private SpeechToTextService speechToTextService;
     private ImageButton startListeningButton;
     private TextView speechTextView;
-    private boolean clicked;
+    private boolean startedListening;
     private List<CommandEntity> commands;
     private Utils utils;
     private GoogleKnowledgeGraphSearchApi googleKnowledgeGraphSearchApi;
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
 
     @SuppressLint("MissingPermission")
     public void onButtonClick(View view) {
-        if (!clicked) {
+        if (!startedListening) {
             speechToTextService.startListening();
         } else {
             speechToTextService.stopListening();
@@ -117,9 +118,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
     protected void onDestroy() {
         textToSpeechService.shutdown();
         speechToTextService.destroy();
-        /*Intent intent = new Intent(this, NotificationBroadcastReceiver.class);
-        intent.setAction("pmf.rma.voiceassistant.NOTIFICATIONS_OFF");
-        sendBroadcast(intent);*/
+        unbindService(this);
         super.onDestroy();
     }
 
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
             e.printStackTrace();
         }
         speechTextView.setText(R.string.textview_text);
-        clicked = false;
+        startedListening = false;
     }
 
     @Override
@@ -147,13 +146,13 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
     @Override
     public void onReadyForSpeech(Bundle params) {
         startListeningButton.setImageResource(R.drawable.microphone_off);
-        clicked = true;
+        startedListening = true;
     }
 
     @Override
     public void onError(int error) {
         startListeningButton.setImageResource(R.drawable.microphone);
-        clicked = false;
+        startedListening = false;
     }
 
     @Override
@@ -323,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
     private void search(String result) {
         String finalResult = result.toLowerCase().replace("pretraži ", "");
         googleKnowledgeGraphSearchApi.getResult(finalResult).enqueue(
-                new Callback<ResponseBody>() {
+                /*new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         try {
@@ -337,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                                 int minDistance = Integer.MAX_VALUE;
                                 for (Object element: elements) {
                                     name = JsonPath.read(element, "$.result.name").toString();
-                                    name = CyrillicLatinConverter.cyrilicToLatin(name);
+                                    name = CyrillicLatinConverter.cyrillicToLatin(name).toLowerCase();
                                     int currentDistance = StringEditDistance.getEditDistance(name, finalResult);
                                     if (currentDistance < minDistance){
                                         minDistance = currentDistance;
@@ -359,6 +358,20 @@ public class MainActivity extends AppCompatActivity implements SpeechToTextServi
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         textToSpeechService.speak(getString(R.string.resultNotFound));
+                    }
+                }*/
+                new Callback<GoogleKnowledgeGraphSearchApiResults>() {
+                    @Override
+                    public void onResponse(Call<GoogleKnowledgeGraphSearchApiResults> call, Response<GoogleKnowledgeGraphSearchApiResults> response) {
+                        GoogleKnowledgeGraphSearchApiResults results = response.body();
+                        List<GoogleKnowledgeGraphSearchApiResults.ItemListElement> list = results.itemListElement;
+                        String text = list.get(0).result.detailedDescription.articleBody;
+                        textToSpeechService.speak(text);
+                    }
+
+                    @Override
+                    public void onFailure(Call<GoogleKnowledgeGraphSearchApiResults> call, Throwable t) {
+
                     }
                 }
         );

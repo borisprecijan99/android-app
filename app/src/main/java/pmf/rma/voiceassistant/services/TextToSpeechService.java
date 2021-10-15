@@ -38,7 +38,7 @@ public class TextToSpeechService extends Service {
     }
 
     public void speak(String text) {
-        textToSpeech.speak(text, android.speech.tts.TextToSpeech.QUEUE_ADD, null, null);
+        textToSpeech.speak(text, TextToSpeech.QUEUE_ADD, null, null);
     }
 
     public void shutdown() {
